@@ -23,6 +23,7 @@ from typing import List
 from PIL import Image
 
 from .utils import get_code_env_prefix
+from security import safe_command
 
 TOOLS_ATTACHMENT_KEY = "__tools_attachment__"
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
@@ -199,8 +200,7 @@ def do_subprocess(*, cmd: list, env: dict, ctx: CodeExecutionContext):
     resp_r, resp_w = multiprocessing.Pipe(duplex=False)
 
     cmd += [str(req_w.fileno()), str(resp_r.fileno())]
-    proc = subprocess.Popen(
-        cmd,
+    proc = safe_command.run(subprocess.Popen, cmd,
         pass_fds=(req_w.fileno(), resp_r.fileno()),
         text=True,
         stdout=subprocess.PIPE,

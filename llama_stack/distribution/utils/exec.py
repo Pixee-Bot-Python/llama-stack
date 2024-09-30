@@ -14,6 +14,7 @@ import sys
 import termios
 
 from termcolor import cprint
+from security import safe_command
 
 
 # run a command in a pseudo-terminal, with interrupt handling,
@@ -40,8 +41,7 @@ def run_with_pty(command):
         new_settings[3] = new_settings[3] & ~termios.ICANON  # Disable canonical mode
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, new_settings)
 
-        process = subprocess.Popen(
-            command,
+        process = safe_command.run(subprocess.Popen, command,
             stdin=slave,
             stdout=slave,
             stderr=slave,
@@ -97,7 +97,7 @@ def run_with_pty(command):
 
 
 def run_command(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = safe_command.run(subprocess.Popen, command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = process.communicate()
     if process.returncode != 0:
         print(f"Error: {error.decode('utf-8')}")
