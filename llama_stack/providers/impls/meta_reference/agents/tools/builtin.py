@@ -10,8 +10,6 @@ import tempfile
 
 from abc import abstractmethod
 from typing import List, Optional
-
-import requests
 from termcolor import cprint
 
 from .ipython_tool.code_execution import (
@@ -25,6 +23,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.agents import *  # noqa: F403
 
 from .base import BaseTool
+from security import safe_requests
 
 
 def interpret_content_as_attachment(content: str) -> Optional[Attachment]:
@@ -117,7 +116,7 @@ class BingSearch:
             "q": query,
         }
 
-        response = requests.get(url=url, params=params, headers=headers)
+        response = safe_requests.get(url=url, params=params, headers=headers)
         response.raise_for_status()
         clean = self._clean_response(response.json())
         return json.dumps(clean)
@@ -156,7 +155,7 @@ class BraveSearch:
             "Accept": "application/json",
         }
         payload = {"q": query}
-        response = requests.get(url=url, params=payload, headers=headers)
+        response = safe_requests.get(url=url, params=payload, headers=headers)
         return json.dumps(self._clean_brave_response(response.json()))
 
     def _clean_brave_response(self, search_response, top_k=3):
@@ -272,7 +271,7 @@ class WolframAlphaTool(SingleMessageBuiltinTool):
             "format": "plaintext",
             "output": "json",
         }
-        response = requests.get(
+        response = safe_requests.get(
             self.url,
             params=params,
         )
